@@ -1,63 +1,51 @@
-WIN_MAX = 2
+# - PlayerTurn
+#   - represent the players selection (r, p, or s)
+# - ComputerTurn
+#   - represent the randomly generated computer selection
+# - Game
+#   - keep track of the wins
+# - Round
+#   - determine the winner based on turns
 
-wins = {
-  player: 0,
-  computer: 0
-}
+require_relative 'game'
+require_relative 'player_turn'
+require_relative 'computer_turn'
+require_relative 'round'
 
-character_map = {
-  "r" => "rock",
-  "p" => "paper",
-  "s" => "scissors"
-}
+game = Game.new
 
-while wins[:player] < WIN_MAX && wins[:computer] < WIN_MAX
-  #print the score of the game
-  puts "Player Score: #{wins[:player]}, Computer Score: #{wins[:computer]}"
+#
+while !game.complete?
+  puts game.standings
+  puts
   player_choice = nil
 
+  player_turn = nil
   #play a round
-  while character_map[player_choice].nil?
+  while player_turn.nil? || !player_turn.valid?
     print "Choose rock (r), paper (p), or scissors (s): "
     player_choice = gets.chomp
+    player_turn = PlayerTurn.new(player_choice)
   end
 
-  computer_choice = ['r', 'p', 's'].sample
+  computer_turn = ComputerTurn.new
 
-  puts "Player chose #{character_map[player_choice]}."
-  puts "Computer chose #{character_map[computer_choice]}"
+  puts "Player chose #{player_turn.humanized_selection}."
+  puts "Computer chose #{computer_turn.humanized_selection}"
 
-  # determine winner
-  winner = nil
-  if player_choice == computer_choice
-    winner = nil
-  elsif player_choice == 'r' && computer_choice == 'p'
-    winner = :computer
-  elsif player_choice == 'r' && computer_choice == 's'
-    winner = :player
-  elsif player_choice == 's' && computer_choice == 'r'
-    winner = :computer
-  elsif player_choice == 's' && computer_choice == 'p'
-    winner = :player
-  elsif player_choice == 'p' && computer_choice == 'r'
-    winner = :computer
-  elsif player_choice == 'p' && computer-choice == 's'
-    winner = :player
-  end
+  round = Round.new(player_turn, computer_turn)
+  winner = round.winner
 
   #output results
   if winner == :computer
-    puts "#{character_map[computer_choice]} beats #{character_map[player_choice]}"
+    puts "#{computer_turn.humanized_selection} beats #{player_turn.humanized_selection}"
     puts "Computer wins!"
   elsif winner
-    puts "#{character_map[player_choice]} beats #{character_map[computer_choice]}"
+    puts "#{player_turn.humanized_selection} beats #{computer_turn.humanized_selection}"
     puts "Player wins!"
   else
     puts "It's a tie"
   end
 
-  #increment count for the game
-  if !winner.nil?
-    wins[winner] += 1
-  end
+  game.log_round(round)
 end
